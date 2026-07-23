@@ -7,22 +7,21 @@ jobs:
   build-site:
     runs-on: ubuntu-latest
     steps:
-      - name: 拉取仓库代码
+      - name: 拉取仓库源码
         uses: actions/checkout@v4
 
-      - name: 配置Node 16
+      - name: 配置 Node.js 16
         uses: actions/setup-node@v4
         with:
           node-version: 16
-          cache: none
 
-      - name: 安装依赖（忽略lock文件检测）
+      - name: 安装项目依赖
         run: npm install --no-audit --no-fund
 
-      - name: 生成博客静态页面
+      - name: 编译生成静态博客文件
         run: hexo clean && hexo generate
 
-      - name: 部署至gh-pages
+      - name: 部署页面到 gh-pages 分支
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
