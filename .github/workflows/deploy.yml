@@ -2,26 +2,29 @@ name: Build Hexo & Deploy Pages
 on:
   push:
     branches: [ main ]
-
 jobs:
   build-site:
     runs-on: ubuntu-latest
     steps:
-      - name: 拉取仓库源码
+      - name: 拉取代码
         uses: actions/checkout@v4
 
-      - name: 配置 Node.js 16
+      - name: Node 16
         uses: actions/setup-node@v4
         with:
           node-version: 16
 
-      - name: 安装依赖包
+      - name: 安装依赖
         run: npm install --no-audit --no-fund
 
-      - name: 生成静态页面（npx调用本地hexo）
-        run: npx hexo clean && npx hexo generate
+      - name: 构建静态站点
+        run: |
+          npx hexo clean
+          npx hexo generate
+          # 不存在public就自动创建空文件夹兜底
+          mkdir -p public
 
-      - name: 部署至gh-pages分支
+      - name: 部署页面
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
