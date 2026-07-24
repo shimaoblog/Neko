@@ -2,32 +2,42 @@ name: Build Hexo & Deploy Pages
 on:
   push:
     branches: [ main ]
+
 jobs:
   build-site:
     runs-on: ubuntu-latest
     steps:
-      - name: 拉取仓库源码
+      - name: 拉取仓库全部文件
         uses: actions/checkout@v4
 
-      - name: 配置 Node.js 16
+      - name: 安装 Node16 + hexo脚手架
         uses: actions/setup-node@v4
         with:
           node-version: 16
+      - run: npm install -g hexo-cli
 
-      - name: 全局安装hexo命令行工具 + 项目依赖
+      - name: 初始化全新标准Hexo目录
         run: |
-          npm install -g hexo-cli
-          npm install --no-audit --no-fund
+          hexo init build_tmp
+          cd build_tmp
+          npm install
+          # 复制你的配置、主题、文章覆盖进去
+          cp ../_config.yml ./
+          cp -r ../themes ./
+          cp -r ../source ./ 2>/dev/null || true
+          # 安装主题必需渲染插件
+          npm install hexo-renderer-ejs hexo-renderer-stylus@2.0.0 hexo-generator-feed
 
-      - name: 构建静态站点
+      - name: 生成静态网页
         run: |
+          cd build_tmp
           hexo clean
           hexo generate
-          if [ ! -f public/index.html ]; then
-            echo "<h1>博客构建出错</h1>" > public/index.html
-          fi
 
-      - name: 部署页面到 gh-pages
+      - name: 复制生成好的页面到public目录
+        run: cp -r build_tmp/public ./
+
+      - name: 部署至gh-pages分支
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
