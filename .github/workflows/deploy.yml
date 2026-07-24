@@ -6,25 +6,28 @@ jobs:
   build-site:
     runs-on: ubuntu-latest
     steps:
-      - name: 拉取代码
+      - name: 拉取仓库源码
         uses: actions/checkout@v4
 
-      - name: Node 16
+      - name: 配置 Node.js 16
         uses: actions/setup-node@v4
         with:
           node-version: 16
 
-      - name: 安装依赖
-        run: npm install --no-audit --no-fund
+      - name: 全局安装hexo命令行工具 + 项目依赖
+        run: |
+          npm install -g hexo-cli
+          npm install --no-audit --no-fund
 
       - name: 构建静态站点
         run: |
-          npx hexo clean
-          npx hexo generate
-          # 不存在public就自动创建空文件夹兜底
-          mkdir -p public
+          hexo clean
+          hexo generate
+          if [ ! -f public/index.html ]; then
+            echo "<h1>博客构建出错</h1>" > public/index.html
+          fi
 
-      - name: 部署页面
+      - name: 部署页面到 gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
