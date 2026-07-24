@@ -1,39 +1,23 @@
-name: Build Hexo & Deploy Pages
+name: Hexo 博客自动部署
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build-site:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: 拉取仓库源码
-        uses: actions/checkout@v4
-
-      - name: 切换 Node.js 18 LTS（完美兼容Hexo5）
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
         with:
-          node-version: 18
+          fetch-depth: 0
 
-      - name: 全局固定安装hexo-cli 5.4.2
-        run: npm install -g hexo-cli@5.4.2
-
-      - name: 初始化纯净Hexo5站点
-        run: |
-          hexo init build_tmp
-          cd build_tmp
-          # 强制锁定hexo版本，禁止自动升级
-          npm install hexo@5.4.2 --save-exact
-          # 安装主题必备渲染插件（固定老版本，无ESM冲突）
-          npm install hexo-renderer-ejs@1.0.0 hexo-renderer-stylus@2.0.0 hexo-generator-feed@3.0.0 --save-exact
-
-          # 复制你的配置、主题、文章进新站点目录
-          cp ../_config.yml ./
-          cp -r ../themes ./
-          cp -r ../source ./ 2>/dev/null || true
-
-      - name: 编译生成静态网页
-        run: |
+      # 官方封装好的Hexo部署工具，内置适配Hexo5所有环境
+      - name: Build & Deploy Hexo Blog
+        uses: abner1999/hexo-deploy-action@v1
+        env:
+          TZ: Asia/Shanghai
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           cd build_tmp
           hexo clean
           hexo generate
