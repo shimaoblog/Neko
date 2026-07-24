@@ -11,22 +11,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 官方封装好的Hexo部署工具，内置适配Hexo5所有环境
       - name: Build & Deploy Hexo Blog
         uses: abner1999/hexo-deploy-action@v1
         env:
           TZ: Asia/Shanghai
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          cd build_tmp
-          hexo clean
-          hexo generate
-
-      - name: 导出打包好的页面
-        run: cp -r build_tmp/public ./
-
-      - name: 部署到 gh-pages 分支
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
